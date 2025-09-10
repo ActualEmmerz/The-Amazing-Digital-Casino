@@ -1,0 +1,124 @@
+:root { --felt:#0b6; --table:#0a473b; --card: #fff; --ink: #222;}
+
+html,body{
+    margin:0;
+    font-family:system-ui, sans-serif;
+    background:radical-gradient(circle at 50% -20%, var(--felt), var(--table));
+    color:#fff;
+}
+
+h1{ text-align:center; letter-spacing:0.08em; margin:1rem 0;}
+
+#game{
+    max-width:990px; margin:0 auto; padding:1rem; display:grid; gap:1rem;
+    position:relative;
+    border-radius:22px;
+    box-shadow: 0 0 40px rgba(0,255,170,.25);
+}
+
+/* pseudo-noise */
+#game::before{
+    content:""; position:absolute; inset:-2px; border-radius:22px; pointer-events:none;
+    background:
+        repeating-radial-gradient(circle at 20% 30%, rgba(255,255,255,.03) 0 1px, transparent 1px 2px),
+        repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 1px, transparent 1px 2px);
+    mix-blend-mode: overlay; opacity:.35;
+}
+
+section{
+    background:rgba(255,255,255,0.06);
+    border-radius:16px; padding:1rem;
+    box-shadow:0 6px 20px rgba(0,0,0,.25) inset;
+}
+
+#controls {display:flex; justify-content:center; gap:.75rem; }
+button {padding:.6rem 1rem; border-radius:999px; border:0; font-weight:700; cursor:pointer; }
+button:disabled { opacity:.5; font-size:1.25rem; min-height:1.5em; }
+#message {text-align:center; font-size:1.25rem; min-height:1.5rem; }
+
+/* card sprite configuration */
+.cards{ display:flex; gap:.5rem; flex-wrap:wrap; min-height:98px;}
+
+@media (min-width:800px){
+    #game {grid-template-columns:1fr 1fr; grid-template-areas:
+        "dealer player"
+        "message message"
+        "controls controls";
+    }
+    section:first-of-type {grid-area: dealer;}
+    section:nth-of-type(2) {grid-area: player;}
+    #message {grid-area: message;}
+    #controls {grid-area: controls;}
+}
+
+.card{
+    width:73px; height:98px;
+    background-image:url("cards.png");
+    background-repeat:no-repeat;
+    display:inline-block;
+    border-radius:6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35);
+}
+
+/* ---- Clubs (row 0) ---- */
+.card--AC  { background-position:    0px    0px; }
+.card--2C  { background-position:  -73px    0px; }
+.card--3C  { background-position: -146px    0px; }
+.card--4C  { background-position: -219px    0px; }
+.card--5C  { background-position: -292px    0px; }
+.card--6C  { background-position: -365px    0px; }
+.card--7C  { background-position: -438px    0px; }
+.card--8C  { background-position: -511px    0px; }
+.card--9C  { background-position: -584px    0px; }
+.card--10C { background-position: -657px    0px; }
+.card--JC  { background-position: -730px    0px; }
+.card--QC  { background-position: -803px    0px; }
+.card--KC  { background-position: -876px    0px; }
+
+/* ---- Diamonds (row 1) ---- */
+.card--AD  { background-position:    0px  -98px; }
+.card--2D  { background-position:  -73px  -98px; }
+.card--3D  { background-position: -146px  -98px; }
+.card--4D  { background-position: -219px  -98px; }
+.card--5D  { background-position: -292px  -98px; }
+.card--6D  { background-position: -365px  -98px; }
+.card--7D  { background-position: -438px  -98px; }
+.card--8D  { background-position: -511px  -98px; }
+.card--9D  { background-position: -584px  -98px; }
+.card--10D { background-position: -657px  -98px; }
+.card--JD  { background-position: -730px  -98px; }
+.card--QD  { background-position: -803px  -98px; }
+.card--KD  { background-position: -876px  -98px; }
+
+/* ---- Hearts (row 2) ---- */
+.card--AH  { background-position:    0px -196px; }
+.card--2H  { background-position:  -73px -196px; }
+.card--3H  { background-position: -146px -196px; }
+.card--4H  { background-position: -219px -196px; }
+.card--5H  { background-position: -292px -196px; }
+.card--6H  { background-position: -365px -196px; }
+.card--7H  { background-position: -438px -196px; }
+.card--8H  { background-position: -511px -196px; }
+.card--9H  { background-position: -584px -196px; }
+.card--10H { background-position: -657px -196px; }
+.card--JH  { background-position: -730px -196px; }
+.card--QH  { background-position: -803px -196px; }
+.card--KH  { background-position: -876px -196px; }
+
+/* ---- Spades (row 3) ---- */
+.card--AS  { background-position:    0px -294px; }
+.card--2S  { background-position:  -73px -294px; }
+.card--3S  { background-position: -146px -294px; }
+.card--4S  { background-position: -219px -294px; }
+.card--5S  { background-position: -292px -294px; }
+.card--6S  { background-position: -365px -294px; }
+.card--7S  { background-position: -438px -294px; }
+.card--8S  { background-position: -511px -294px; }
+.card--9S  { background-position: -584px -294px; }
+.card--10S { background-position: -657px -294px; }
+.card--JS  { background-position: -730px -294px; }
+.card--QS  { background-position: -803px -294px; }
+.card--KS  { background-position: -876px -294px; }
+
+/* ---- Card back (row 0, last tile) ---- */
+.card--back{ background-position: -949px 0px; }
