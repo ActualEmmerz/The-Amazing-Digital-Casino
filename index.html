@@ -9,6 +9,18 @@
     <h1>BlackJack</h1>
 
     <div id="game">
+        <div id= "banking" style="text-align:center; margin-bottom:.5rem;">
+            <strong>Bank:</strong> $<span id="bank">1000</span> &nbsp; |
+            <strong>Bet:</strong> S<span id ="bet">0</span>
+        </div>
+
+        <div id="chips style="text-align:center; margin-bottom:.75rem;">
+            <button type="button" onclick="addBet(1)">$1</button>
+            <button type="button" onclick="addBet(5)">$5</button>
+            <button type="button" onclick="addBet(25)">$25</button>
+            <button type="button" onclick="addBet(100)">$100</button>
+            <button type="button" onclick="clearBet(0)">Clear Bet</button>
+        </div>
         <div>
             <h2>Dealer</h2>
             <div id="dealer-cards" class="cards"></div>
@@ -23,12 +35,15 @@
          <p id="message"></p>
 
         <div id="controls">
-            <button onclick="startGame()">Deal</button>
-            <button onclick="hit()">Hit</button>
-            <button onclick="fold()">Fold</button>
+            <button id="deal-btn" type="button" onclick="startGame()">Deal</button>
+            <button id="hit-btn" type="button" onclick="hit()" disabled>Hit</button>
+            <button id="stand-btn" type="button" onclick="stand()" disabled>Stand</button>
+            <button id="double-btn" type="button" onclick="doubleDown()" disabled>Double</button>
+            <button id="split-btn" type="button" onclick="splitHand()" disabled>Split</button>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>
