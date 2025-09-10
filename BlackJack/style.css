@@ -16,6 +16,18 @@ h1{ text-align:center; letter-spacing:0.08em; margin:1rem 0;}
     box-shadow: 0 0 40px rgba(0,255,170,.25);
 }
 
+#banking, #chips{
+    text-aling:center;
+    margin-bottom:.75rem;
+}
+
+#chips button {
+    margin: 0 .25rem;
+    padding: .4rem .8rem;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
 /* pseudo-noise */
 #game::before{
     content:""; position:absolute; inset:-2px; border-radius:22px; pointer-events:none;
@@ -122,3 +134,4 @@ button:disabled { opacity:.5; font-size:1.25rem; min-height:1.5em; }
 
 /* ---- Card back (row 0, last tile) ---- */
 .card--back{ background-position: -949px 0px; }
+
