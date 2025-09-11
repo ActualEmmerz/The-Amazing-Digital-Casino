@@ -17,7 +17,7 @@ h1{ text-align:center; letter-spacing:0.08em; margin:1rem 0;}
 }
 
 #banking, #chips{
-    text-aling:center;
+    text-align:center;
     margin-bottom:.75rem;
 }
 
@@ -134,4 +134,5 @@ button:disabled { opacity:.5; font-size:1.25rem; min-height:1.5em; }
 
 /* ---- Card back (row 0, last tile) ---- */
 .card--back{ background-position: -949px 0px; }
+
 
