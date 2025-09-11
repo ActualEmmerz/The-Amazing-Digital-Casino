@@ -328,14 +328,35 @@ function settleBets() {
           if (hand.busted){
                 message.push('Hand ${i+1}: Bust (-$${hand.bet}).');
                continue;
-               
-               message.push('Hand ${i+1}: Dealer busts, you win (+$${hand.bet}).');
+          }
+          if ( d > 21) {
+               pay(hand.bet * 2);
+               message.push((`Hand ${i+1}: Dealer busts, you win (+$${hand.bet}).`);
+               continue;
+              } 
+          if ( p > d) {
+               pay(hand.bet * 2);
+               message.push('Hand ${i+1}: Win (+$${hand.bet}).');
+          } else if ( p < d){
+               messages.push('Hand ${i+1}: Lose (-$${hand.bet}).');
+          } else {
+               pay(hand.bet);
+               messages.push('Hand ${i+1}: Push (bet returned).');
+          }
+     }
+          sendInfo(messages.join(""));
+          endRound();
+}
                
 
 function endRound(text){
     roundOver  = true;
-    messageE1.textContent = text;
-    setControls({deal:true, hit:false, stand:false});
+    currentBet = 0;     
+    updateBankUI();
+    setControls({ deal:true, hit:false, stand:false, double:false, split:false});
+     if (shoeNeedsShuffle){
+          freshShoe();
+     }
 }
 
  /* ======================
@@ -343,71 +364,94 @@ function endRound(text){
  ======================= */
 
 function createCardEl(rank, suit){
-    const el = document.createElement("div");
-    el.className = 'card card--${rank}${suit}';
-    el.setAttribute("aria-label", '${rank} of ${suitFullName(suit)}');
-    return el;
+     const el = document.createElement("div");
+     el.className = 'card card--${rank}${suit}';
+     el.setAttribute("aria-label", '${rank} of ${suitFullName(suit)}');
+     return el;
 }
-
 function suitFullName(s) {
     return s == "C" ? "Clubs" :
            s == "D" ? "Diamonds" :
            s == "H" ? "Hearts" :
                       "Spades";
 }
-
-function render(hideDealerHole){
-    renderHand(dealerCardsEl, dealerHand, hideDealerHole);
-    renderHand(playerCardsEl, playerHand, false);
-
-    const ps = scoreHand(playerHand);
-    const ds = scoreHand(dealerHand);
-    playerTotalEl.textContent = ps.soft ? 'Total: ${ps.total} (soft)' : 'Total: ${ps.total}';
-    dealerTotalEl.textContent = hideDealerHole ? 'Dealer total: ?' :
-                                ds.soft ? 'Total: ${ds.total} (soft)' : 'Total: ${ds.total}';
-
+function activeHand() {
+     return playerHands[currentHandIndex] || null;
+}
+function setControls({ deal, hit, stand, double, split}) {
+     if (dealBtn) dealBtn.disabled = deal === false;
+     if (hitBtn) hitBtn.disabled = hit === false; 
+     if (standBtn) standBtn.disabled = stand === false;
+     if (doubleBtn) doubleBtn.disabled = double === false;
+     if (splitBtn) splitBtn.disabled = split === false;
+}
+function canDouble() {
+     const hand = activeHand();
+     if (!hand || hand.done){
+          return false;
+     }
+     if (hand.cards.length !== 2){
+          return false;
+     }
+     if (bank < hand.bet){
+          return false;
+     }
+     return true;
+}
+function canSplit() {
+     if (splitUsed){
+          return false;
+     }
+     const hand = activeHand();
+     if(!hand || hand.done){
+          return false;
+     }
+     if(hand.cards.length !== 2){
+          return false;
+     }
+     const [a,b] = hand.cards;
+     const sameRank = a.rank == b.rank;
+     const tenValue = (v) => v === 10;
+     const bothTenVal = tenValue(a.value) && tenValue(b.value);
+     if (bank < hand.bet){
+          return false;
+     }
+     return sameRank || (ALLOW_SPLIT_10_VALUES && bothTenVal);
+}
+          
+function sendInfo(txt){
+     messageEl.textContent = txt;
 }
 
-function renderHand(container, hand, hideHole){
-    container.innerHTML = "";
-    hand.forEach((card, idx) => {
-        if (hideHole && idx === 1 ) {
-            const back = document.createElement("div");
-            back.className = "card card--back";
-            back.setAttribute("aria-label", "face-down card");
-            container.appendChild(back);
-        } else {
-            container.appendChild(createCardEl(card.rank, card.suit));
-        }
-     });
- }
+
 
  /* =========================
    Controls and Shortcuts
  ========================= */
-
- function setControls({deal, hit, stand}) {
-    if (dealBtn) dealBtn.disabled = !deal;
-    if (hitBtn) hitBtm.disabled = !hit;
-    if (standBtn) standBtn.disabled = !stand;
- }
-
-if (dealBtn)  dealBtn.addEventListener("click", startGame);
-if (hitBtn)   hitBtn.addEventListener("click", hit);
-if (standBtn) standBtn.addEventListener("click", stand);
-
-// Keyboard : D deal, H hit, S stand
-
 window.addEventListener("keydown", (e) => {
-    const key = e.key.toLowerCase();
-    const tag = document.activeElement?.tagName?.toLowerCase();
-    if (["input", "textarea", "select"].includes(tag)) return;
-    if (key == "d" && !dealBtn?.disabled) startGame();
-    if (key === "s" && !standBtn?.disabled) stand();
+     const key = e.keytoLowerCase();
+     const tag = document.activeElement?.tagName?.toLowerCase();
+     if (["input", "textarea", "select"].includes(tag)){
+          return;
+     }
+     if (key === "d" && !dealBtn.disabled){
+          startGame();
+     }
+     if (key === "h" && !hitBtn.disabled) {
+          hit();
+     }
+     if (key === "s" & !standBtn.disabled){
+          stand();
+     }
+     if (key === "x" && !doubledBtn.disabled){
+          doubleDown();
+     }
+     if( key === "P" & !splitBtn.disabled){
+          splitHand();
+     });
 
-});
+     freshShoe();
+     updateBankUI();
+     setControls({ deal:true, hit:false, stand:false, double:false, split:false});
+     sendInfo("Place chips, then Deal. Keys: D/H/S, X=Double, P=Split");
 
-freshDeck();
-setControls({ deal:true, hit:false, stand:false });
-
-messageEl.textContent = "Press Deal (d) to start."
