@@ -31,24 +31,17 @@ const standBtn = $("stand-btn") || document.querySelector("#controls button:nth-
 const SUITS = ["C", "D", "H", "S"];
 const RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
 
-function createDeck(){
-    const d = [];
-    for (const s of SUITS){
-        for (const r of RANKS){
-            d.push({ rank: r, suit: s, value: baseValue(r) });
-
-        }
-    }
-
-    return d;
+function createSingleDeck() {
+     const d = [];
+     for (const s of SUITS) for (const r of RANKS)
+          d.push({ rank:r, suit:s, value: baseValue(r) });
+     return d;
 }
-
-function baseValue(rank) {
-    if (rank == "A") return 11;
-    if (rank == "J" || rank == "Q" || rank == "K") return 10;
-    return Number(rank);
+function baseValue(r){
+     if (r == "A") return 11;
+     if (r == "J" || r == "Q" || r == "K") return 10; 
+     return Number(r):
 }
-
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--){
         const j = (Math.random() * ( i + 1)) | 0;
@@ -56,11 +49,14 @@ function shuffle(array) {
     }
     return array;
 }
-
-function newDeck() {
-    deck = shuffle(createDeck());
-}
-
+function freshShoe() {
+     shoe = [];
+     for (let i=0; i < NUM_DECKS; i++) shoe.push (...createSingleDeck());
+     shuffle(shoe);
+     cardsDealt = 0;
+     cutCardAt = Math.floor(shoe.length * PENETRATION):
+     shoeNeedsShuffle = false;
+     sendInfo('New ${NUM_DECKS}-deck show shuffled.');
 
  /* ==================
       Score Rules
@@ -90,62 +86,206 @@ function isBlackjack(hand) {
 }
 
  /*======================
+     Banking + Bets
+ ===================== */
+function addBet(amount) {
+     if (roundInProgress()) { 
+          sendInfo ("Can't change bet during a round.");
+          return;
+     }
+     if (bank < amount) {
+          sendInfo ("Not enough bank for that chip.");
+          return;
+     }
+     bank -= amount;
+     currentBet += amount;
+     updateBankUI();
+}
+function clearBet() {
+     if (roundInProgress()) {
+          sendInfo("Can't clear bet during a round.");
+          return;
+     }
+     bank += currentBet;
+     currentBet = 0;
+     updateBankUI();
+
+}
+function lockInitialBet() {
+     if (currentBet <+ 0 ) {
+          sendInfo ("place a bet first"); 
+          return false;
+     }
+     playerHands[0].bet = currentBet;
+     return true;
+}
+function trySpend(amount) {
+     if (bank < amount) {
+          return false;
+     }
+     bank -= amount;
+     updateBankUI();
+     return true;
+}
+function pay(amount) {
+     bank += amount;
+     updateBankUI();
+}
+function updateBankUI() {
+     bankEl.textContent = bank;
+     betEl.textContent = currentBet;
+}
+     
+ /*======================
      Game Play
  ===================== */
 
-function dealCard(toHand) {
-    if (deck.length === 0) frehDeck();
-    toHand.push (deck.pop());
+function dealCard(to) {
+     if (shoe.length === 0){
+          freshShoe();
+     } 
+     const card = shoe.pop();
+     to.push(card);
+     cardsDealt++;
+     if (cardsDealt >= cutCardsAt) {
+          shoeNeedsShuffle = true;
+     }
+     return card;
 }
 
+funtion roundInProgress() {
+     return !roundOVer && playerHands.length > 0;
+} 
+     
+
 function startGame() {
-    roundOver = false;
-    dealerHidden = true;
-    messageE1.textContent = "";
-    playerHand = [];
-    dealerHand = [];
+     if (roundInProgress()) {
+          return;
+     }
+     if (shoe.length === 0) {
+          freshShoe();
+     }
+     dealerHidden = true;
+     roundOver = false;
+     splitUsed = false;
+     messageEl.textcContent = "";
 
-    if (deck.length < MIN_DECK_BEFORE_REFRESH) freshDeck();
+     dealerHand = [];
+     playerHand = [{ cards: [], bet:0, doubled:false, busted:false, naturalBJ:false }];
 
-    dealCard(playerHand);
-    dealCard(dealerHand);
-    dealCard(playerHand);   
-    dealCard(dealerHand);
+     if (!lockInitialBet()) {
+          return;
+     }
 
-    render(true);
+     dealCard(playerHands[0].cards);
+     dealCard(dealerHand);
+     dealCard(playerHands[0].cards);
+     dealCard(dealerHand);
 
-    const playerBJ = isBlackjack(playerHand);
-    const dealerBJ = isBlackjack(dealerHand);
-    if (playerBJ || dealerBJ) {
-        dealerHidden = false;
-        render(false);
-        endRound(compareAfterStand());
-        return;
-    }
-    setControls({ deal:false, hit:true, stand:true });
+     playerHands[0].nautralBJ = isBlackjack(playerHands[0].cards);
+     const dealerBJ = isBlackjack(dealerHand);
+
+     render(true);
+     setControls({ deal:false, hit:true, stand:true. double:canDouble(), split:canSplit()});
+     if (playerHands[0].nautrualBJ || dealerBJ) { 
+          dealerHidden = false; 
+          render(false);
+          resolveRoundImmediate(playerHands[0].nautralBJ, dealerBJ);
+          return;
+     } 
+     sendInfo("Your move. (H)it, (S)tand, (X) Double, (P) Split");
 }
 
 function hit() {
-    if (roundOver) return;
-    dealCard(playerHand);
-    render(true);
-
-    const { total } = scoreHand(playerHand);
-    if (total > 21) {
-        dealerHidden = false;
-        render(false);
-        endRound("You bust. Dealer wins");
+    if (!roundInProgress()){
+         return;
     }
+     const hand = activeHand();
+     if (hand.done) {
+          return;
+     }
+     dealCard(hand.cards);
+     render(true);
+     const { total } = scoreHand(hand.cards);
+     if (total > 21) {
+          hand.busted = true;
+          hand.done = true; 
+          advancedHandOrDealer();
+     } else {
+          setControls({ deal:false, hit:true, stand:true, double:false, split:false });
+     }
 }
 
 function stand(){
-    if (roundOver) return;
-    dealerHidden = false;
-    render(false);
-    dealerPlay();
-    endRound(compareAfterStand());
+    if (!roundInProgress()){
+         return;
+    }
+     const hand = activeHand();
+     hand.done = true;
+     advancedHandOrDealer();
 }
+function doubleDown() {
+     if(!roundInProgress()) {
+          return;
+     }
+     if(!canDouble()){
+          sendInfo("Double not allowed now.");
+          return;
+     }
+     const hand = activeHand();
+}
+     if(!trySpend(hand.bet){
+          sendInfo("not enough bank to oduble.");
+          return;
+     }
+     hand.bet += hand.bet;
+     hand.doubled = true;
 
+     dealCard(hand.cards);
+     render(true);
+     const { total } = scoreHand(hand.cards);
+     if (total > 21){
+          hand.busted = true;
+          hand.done = true;
+          advancedHandOrDealer();
+     }
+function splitHand() {
+     if(!roundInProgress()){
+          return;
+     } 
+     if(!canSplit()) {
+          sendInfo("Split not allowed now.")
+          return;
+     } 
+     const hand = activeHand();
+     const [c1, c2] = hand.cards;
+     if (!trySpend(hand.bet)) {
+          sendInfo("Not enough bank to split.");
+          return;
+     }
+     const newHand = { cards:[c2], bet:hand.bet, doubled:false, done:false, busted:false, naturalBJ:false};
+     hand.cards = [c1];
+     dealCard(hand.cards);
+     dealCard(newHand.cards);
+     playerHands.splice(currentHandIndex+1, 0, newHand);
+     splitUsed = true;
+     render(true);
+     setControls({deal:false, hit:true, stand:true, double:canDouble(), split:false });
+}
+function advancedHandOrDealer() {
+     while(currentHandIndex < playerHands.length && playerHands[currentHandIndex].done){
+          currentHandIndex++;
+     }
+     if (currentHandIndex < playerHands.length) {
+          render(true);
+          setControls({ deal:false, hit:true, stand:true, double:canDouble(), split:canSplit() });
+          return;
+     }
+     dealerHidden = false;
+     render(false);
+     dealerPlay)(;
+     settleBets();
+}
 function dealerPlay(){
     while (true){
         const { total, soft } = scoreHand(dealerHand);
@@ -165,21 +305,32 @@ function dealerPlay(){
 
     render(false);
 }
-
-function CompareAfterStand(){
-    const p = scoreHand(playerHand).total;
-    const d = scoreHand(dealerHand).total;
-
-    if (isBlackjack(playerHand)&& isBlackjack(dealerHand)) return "Push. Both have Blackjack.";
-    if (isBlackjack(playerHand)) return "BlackJack! You Win.";
-    if (isBlackjack(dealerHand)) return "Dealer has Blackjack.";
-
-    if (p > 21) return "You bust. Dealer wins.";
-    if (d > 21) return "Dealer busts. You win!";
-    if (p > d) return "You win!";
-    if (p < d) return "Dealer wins.";
-    return "Push.";
+function resolveRoundImmediate(playerBJ, dealerBJ) {
+     if (playerBJ && dealreBJ) {
+          pay(playerHands[0].bet);
+          sendInfo("Push. Both have Blackjack.");
+     } else if (playerBJ) {
+          const win =Math.floor(playerHands[0].bet * (1 + BLACKJACK_PAYOUT));
+          pay(win);
+          sendInfo("Blackjack! Paid 3:2.");
+     } else if (dealerBJ) {
+          sendInfo("Dealer Blackjack.");
+     }
+     endRound();
 }
+function settleBets() { 
+     const d = scoreHand(dealerHand).total;
+     let messages = [];
+     for (let i=0; i<playerHands.length; i++){
+          const hand = playerHands[i];
+          const p =scoreHand(hand.cards).total;
+
+          if (hand.busted){
+                message.push('Hand ${i+1}: Bust (-$${hand.bet}).');
+               continue;
+               
+               message.push('Hand ${i+1}: Dealer busts, you win (+$${hand.bet}).');
+               
 
 function endRound(text){
     roundOver  = true;
@@ -258,4 +409,5 @@ window.addEventListener("keydown", (e) => {
 
 freshDeck();
 setControls({ deal:true, hit:false, stand:false });
+
 messageEl.textContent = "Press Deal (d) to start."
