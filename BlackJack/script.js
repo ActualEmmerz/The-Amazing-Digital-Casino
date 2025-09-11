@@ -40,7 +40,7 @@ function createSingleDeck() {
 function baseValue(r){
      if (r == "A") return 11;
      if (r == "J" || r == "Q" || r == "K") return 10; 
-     return Number(r):
+     return Number(r);
 }
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--){
@@ -54,9 +54,10 @@ function freshShoe() {
      for (let i=0; i < NUM_DECKS; i++) shoe.push (...createSingleDeck());
      shuffle(shoe);
      cardsDealt = 0;
-     cutCardAt = Math.floor(shoe.length * PENETRATION):
+     cutCardAt = Math.floor(shoe.length * PENETRATION);
      shoeNeedsShuffle = false;
      sendInfo('New ${NUM_DECKS}-deck show shuffled.');
+}
 
  /* ==================
       Score Rules
@@ -153,7 +154,7 @@ function dealCard(to) {
      return card;
 }
 
-funtion roundInProgress() {
+function roundInProgress() {
      return !roundOVer && playerHands.length > 0;
 } 
      
@@ -168,7 +169,7 @@ function startGame() {
      dealerHidden = true;
      roundOver = false;
      splitUsed = false;
-     messageEl.textcContent = "";
+     messageEl.textContent = "";
 
      dealerHand = [];
      playerHand = [{ cards: [], bet:0, doubled:false, busted:false, naturalBJ:false }];
@@ -186,8 +187,8 @@ function startGame() {
      const dealerBJ = isBlackjack(dealerHand);
 
      render(true);
-     setControls({ deal:false, hit:true, stand:true. double:canDouble(), split:canSplit()});
-     if (playerHands[0].nautrualBJ || dealerBJ) { 
+     setControls({ deal:false, hit:true, stand:true, double:canDouble(), split:canSplit()});
+     if (playerHands[0].naturalBJ || dealerBJ) { 
           dealerHidden = false; 
           render(false);
           resolveRoundImmediate(playerHands[0].nautralBJ, dealerBJ);
@@ -233,9 +234,8 @@ function doubleDown() {
           return;
      }
      const hand = activeHand();
-}
-     if(!trySpend(hand.bet){
-          sendInfo("not enough bank to oduble.");
+     if(!trySpend(hand.bet)) {
+          sendInfo("not enough bank to double.");
           return;
      }
      hand.bet += hand.bet;
@@ -249,6 +249,7 @@ function doubleDown() {
           hand.done = true;
           advancedHandOrDealer();
      }
+    }
 function splitHand() {
      if(!roundInProgress()){
           return;
@@ -283,7 +284,7 @@ function advancedHandOrDealer() {
      }
      dealerHidden = false;
      render(false);
-     dealerPlay)(;
+     dealerPlay();
      settleBets();
 }
 function dealerPlay(){
@@ -306,7 +307,7 @@ function dealerPlay(){
     render(false);
 }
 function resolveRoundImmediate(playerBJ, dealerBJ) {
-     if (playerBJ && dealreBJ) {
+     if (playerBJ && dealerBJ) {
           pay(playerHands[0].bet);
           sendInfo("Push. Both have Blackjack.");
      } else if (playerBJ) {
@@ -331,7 +332,7 @@ function settleBets() {
           }
           if ( d > 21) {
                pay(hand.bet * 2);
-               message.push((`Hand ${i+1}: Dealer busts, you win (+$${hand.bet}).`);
+               message.push(`Hand ${i+1}: Dealer busts, you win (+$${hand.bet}).`);
                continue;
               } 
           if ( p > d) {
@@ -429,29 +430,31 @@ function sendInfo(txt){
    Controls and Shortcuts
  ========================= */
 window.addEventListener("keydown", (e) => {
-     const key = e.keytoLowerCase();
-     const tag = document.activeElement?.tagName?.toLowerCase();
-     if (["input", "textarea", "select"].includes(tag)){
-          return;
-     }
-     if (key === "d" && !dealBtn.disabled){
-          startGame();
-     }
-     if (key === "h" && !hitBtn.disabled) {
-          hit();
-     }
-     if (key === "s" & !standBtn.disabled){
-          stand();
-     }
-     if (key === "x" && !doubledBtn.disabled){
-          doubleDown();
-     }
-     if( key === "P" & !splitBtn.disabled){
-          splitHand();
-     });
+  const key = e.key.toLowerCase();
+  const tag = document.activeElement?.tagName?.toLowerCase();
+  if (["input","textarea","select"].includes(tag)) {
+    return;
+  }
 
-     freshShoe();
-     updateBankUI();
-     setControls({ deal:true, hit:false, stand:false, double:false, split:false});
-     sendInfo("Place chips, then Deal. Keys: D/H/S, X=Double, P=Split");
+  if (key === "d" && !dealBtn.disabled){
+    startGame();
+  }
+  if (key === "h" && !hitBtn.disabled){
+       hit();
+  }
+  if (key === "s" && !standBtn.disabled){
+    stand();
+  }
+  if (key === "x" && !doubleBtn.disabled){
+     doubleDown();
+  }
+  if (key === "p" && !splitBtn.disabled){
+     splitHand();
+  }
+});
 
+
+freshShoe();
+updateBankUI();
+setControls({ deal:true, hit:false, stand:false, double:false, split:false});
+sendInfo("Place chips, then Deal. Keys: D/H/S, X=Double, P=Split");
